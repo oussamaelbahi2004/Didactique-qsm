@@ -1,0 +1,986 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QCM Didactique Générale</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        body {
+            font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+        }
+        ::selection {
+            background-color: #bfdbfe; /* bg-blue-200 */
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-slate-50 text-slate-800 pb-20 selection:bg-blue-200">
+
+    <!-- Header (Sticky) -->
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-sm">
+        <div class="max-w-4xl mx-auto px-4 py-4">
+            <div class="flex flex-col sm:flex-row justify-between items-center gap-4">
+                <div>
+                    <h1 class="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">QCM: Didactique Générale</h1>
+                    <p class="text-sm text-slate-500 font-medium">Niveau Difficile • 100 Questions</p>
+                </div>
+                
+                <!-- Action section (Valider) -->
+                <div id="action-valider" class="flex items-center gap-4 w-full sm:w-auto">
+                    <div class="flex-1 sm:w-48">
+                        <div class="flex justify-between text-xs font-semibold text-slate-600 mb-1">
+                            <span>Progression</span>
+                            <span id="progress-text">0%</span>
+                        </div>
+                        <div class="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
+                            <div id="progress-bar" class="h-full bg-blue-600 transition-all duration-300 ease-out" style="width: 0%"></div>
+                        </div>
+                    </div>
+                    <button id="btn-submit" onclick="handleSubmit()" disabled class="bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white px-5 py-2 rounded-lg font-semibold text-sm transition-colors shadow-sm whitespace-nowrap">
+                        Valider
+                    </button>
+                </div>
+
+                <!-- Action section (Recommencer) -->
+                <div id="action-recommencer" class="hidden">
+                    <button onclick="handleReset()" class="flex items-center gap-2 bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2 rounded-lg font-semibold text-sm transition-colors">
+                        <i data-lucide="refresh-ccw" class="w-4 h-4"></i> Recommencer
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-4xl mx-auto px-4 py-8">
+        
+        <!-- Results Banner -->
+        <div id="results-banner" class="hidden mb-8 p-6 bg-white border-2 border-blue-100 rounded-2xl shadow-sm text-center transform transition-all duration-500">
+            <i data-lucide="award" class="mx-auto text-blue-500 mb-3 w-12 h-12"></i>
+            <h2 class="text-3xl font-bold text-slate-900 mb-2">Résultat Final</h2>
+            <div class="text-5xl font-black text-blue-600 mb-4">
+                <span id="score-text">0</span> <span class="text-2xl text-slate-400">/ 100</span>
+            </div>
+            <p id="score-message" class="text-slate-600"></p>
+        </div>
+
+        <!-- Questions List -->
+        <div id="questions-container" class="space-y-6">
+            <!-- Questions will be injected here via JavaScript -->
+        </div>
+        
+        <!-- Bottom Actions -->
+        <div class="mt-12 flex justify-center pb-8">
+            <button id="btn-submit-bottom" onclick="handleSubmit()" class="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-xl font-bold shadow-lg hover:shadow-xl transition-all">
+                Valider mes réponses
+            </button>
+            <button id="btn-top-bottom" onclick="window.scrollTo({ top: 0, behavior: 'smooth' })" class="hidden flex items-center gap-2 bg-slate-800 hover:bg-slate-900 text-white px-6 py-3 rounded-xl font-semibold transition-colors">
+                <i data-lucide="arrow-up" class="w-5 h-5"></i> Retour en haut
+            </button>
+        </div>
+    </main>
+
+    <script>
+        const questionsData = [
+  // Partie 1
+  {
+    id: 1,
+    part: "Partie 1 : Distinction entre Pédagogie et Didactique",
+    question: "Étymologiquement, de quels mots grecs provient le terme \"pédagogie\" ?",
+    options: ["Paidós (enfant) et gogia (conduire)", "Paidós (enfant) et didaskein (enseigner)", "Didak (savoir) et gogia (conduire)", "Paidós (enfant) et logos (science)"],
+    answer: 0
+  },
+  {
+    id: 2,
+    part: "Partie 1",
+    question: "En quelle année le mot \"pédagogie\" a-t-il fait sa première apparition dans la langue française ?",
+    options: ["1385", "1485", "1585", "1685"],
+    answer: 1
+  },
+  {
+    id: 3,
+    part: "Partie 1",
+    question: "Historiquement, qu'était un \"paidagôgós\" ?",
+    options: ["Un savant philosophe grec", "Un administrateur d'école", "Un esclave qui conduisait les garçons à l'école et leur donnait des cours", "Un maître de rhétorique"],
+    answer: 2
+  },
+  {
+    id: 4,
+    part: "Partie 1",
+    question: "Quelle est la différence fondamentale d'objet d'étude entre la pédagogie et la didactique ?",
+    options: ["La pédagogie se concentre sur le savoir, la didactique sur l'enseignant.", "La pédagogie se concentre sur l'apprenant, la didactique se concentre sur l'enseignement d'un contenu particulier.", "La pédagogie étudie les programmes scolaires, la didactique étudie la psychologie de l'enfant.", "Il n'y a aucune différence, ce sont de stricts synonymes."],
+    answer: 1
+  },
+  {
+    id: 5,
+    part: "Partie 1",
+    question: "L'un des buts de la pédagogie est l'élimination de :",
+    options: ["La réflexion critique", "L'apprentissage coopératif", "L'apprentissage monotone", "La méthode expérientielle"],
+    answer: 2
+  },
+  {
+    id: 6,
+    part: "Partie 1",
+    question: "Quelle méthode pédagogique est utilisée principalement lorsque le contenu est \"hors de portée\" si les élèves devaient chercher par eux-mêmes ?",
+    options: ["La méthode expositive (ou transmissive)", "La méthode interrogative", "La méthode active", "La méthode expérientielle"],
+    answer: 0
+  },
+  {
+    id: 7,
+    part: "Partie 1",
+    question: "\"En montrant comment, vous dites ce que vous faites.\" À quelle méthode cela correspond-il ?",
+    options: ["La méthode expositive", "La méthode démonstrative", "La méthode maïeutique", "La méthode de découverte"],
+    answer: 1
+  },
+  {
+    id: 8,
+    part: "Partie 1",
+    question: "La théorie de la logique déductive comme méthode d'apprentissage est au cœur de la :",
+    options: ["Méthode active", "Méthode magistrale", "Méthode interrogative ou maïeutique", "Méthode de David Kolb"],
+    answer: 2
+  },
+  {
+    id: 9,
+    part: "Partie 1",
+    question: "La méthode qui confère un plus grand degré de responsabilité à l'apprenant (études de cas, jeux de rôle) tout en nécessitant les conseils de l'instructeur est la :",
+    options: ["Méthode démonstrative", "Méthode active", "Méthode transmissive", "Méthode maïeutique"],
+    answer: 1
+  },
+  {
+    id: 10,
+    part: "Partie 1",
+    question: "Qui a proposé la théorie de l'apprentissage par l'expérience (méthode expérientielle) ?",
+    options: ["Jean Piaget", "Kurt Lewin", "David Kolb", "Guy Brousseau"],
+    answer: 2
+  },
+  {
+    id: 11,
+    part: "Partie 1",
+    question: "Selon Kolb, comment la connaissance est-elle créée ?",
+    options: ["Par la transmission d'un savoir savant", "Par la transformation de l'expérience", "Par le conflit sociocognitif exclusivement", "Par l'assimilation passive"],
+    answer: 1
+  },
+  {
+    id: 12,
+    part: "Partie 1",
+    question: "Quels théoriciens ont influencé les travaux de David Kolb ?",
+    options: ["Dewey, Lewin et Piaget", "Brousseau, Chevallard et Martinand", "Montessori, Freinet et Rousseau", "Vygotski, Bruner et Skinner"],
+    answer: 0
+  },
+  {
+    id: 13,
+    part: "Partie 1",
+    question: "Quel outil pédagogique est défini comme une méthode efficace pour générer des idées par association à partir d'un thème central ?",
+    options: ["Le Lapbook", "Le Kahoot", "Le Mind-Mapping", "Le tableau blanc interactif"],
+    answer: 2
+  },
+  {
+    id: 14,
+    part: "Partie 1",
+    question: "Qu'est-ce qu'un \"Lapbook\" ?",
+    options: ["Un ordinateur portable dédié à l'éducation", "Un dossier rempli de mini-livres contenant des informations sur un sujet", "Un jeu de quiz en ligne", "Une méthode de mémorisation par répétition"],
+    answer: 1
+  },
+  {
+    id: 15,
+    part: "Partie 1",
+    question: "Quel outil a montré une amélioration de l'attitude des élèves et l'augmentation de leurs résultats scolaires par le jeu ?",
+    options: ["GeoGebra", "Kahoot", "Le Lapbooking", "Le Mind-Mapping"],
+    answer: 1
+  },
+  {
+    id: 16,
+    part: "Partie 1",
+    question: "La méthode Montessori repose sur combien de principes fondamentaux mentionnés dans le cours ?",
+    options: ["3", "4", "5", "7"],
+    answer: 2
+  },
+  {
+    id: 17,
+    part: "Partie 1",
+    question: "Lequel de ces éléments N'EST PAS un principe de la méthode Montessori selon le cours ?",
+    options: ["Le respect de l'enfant", "L'esprit absorbant", "Le conflit cognitif", "L'environnement préparé"],
+    answer: 2
+  },
+  {
+    id: 18,
+    part: "Partie 1",
+    question: "Étymologiquement, le terme \"didactique\" vient du verbe grec \"didaskein\" qui signifie :",
+    options: ["Apprendre", "Conduire", "Enseigner", "Transmettre"],
+    answer: 2
+  },
+  {
+    id: 19,
+    part: "Partie 1",
+    question: "Dans le terme \"didactique\", l'accent est porté sur :",
+    options: ["La relation maître-élève en vue de l'éducation", "La relation au savoir en vue de l'instruction", "La relation école-société", "La gestion du groupe-classe"],
+    answer: 1
+  },
+  {
+    id: 20,
+    part: "Partie 1",
+    question: "Dans le terme \"pédagogie\", l'accent est porté sur :",
+    options: ["La relation maître-élève en vue de l'éducation", "La transposition du savoir", "L'épistémologie de la discipline", "Le savoir savant"],
+    answer: 0
+  },
+  {
+    id: 21,
+    part: "Partie 1",
+    question: "Le didacticien est considéré comme un spécialiste :",
+    options: ["De la gestion des conflits en classe", "De la psychologie du développement", "De l'enseignement d'une (ou des) discipline(s)", "De l'administration scolaire"],
+    answer: 2
+  },
+  {
+    id: 22,
+    part: "Partie 1",
+    question: "Laquelle de ces affirmations résume le mieux la distinction abordée au Chapitre 1 ?",
+    options: ["La didactique est centrée sur l'enseignant et les connaissances, la pédagogie sur l'apprenant et les méthodes.", "La pédagogie est théorique, la didactique est purement pratique.", "La didactique remplace la pédagogie au lycée.", "La pédagogie est une sous-branche de la didactique."],
+    answer: 0
+  },
+  {
+    id: 23,
+    part: "Partie 1",
+    question: "La didactique implique un processus consistant à sélectionner, analyser et...",
+    options: ["évaluer les élèves", "organiser les savoirs et savoir-faire", "gérer la discipline en classe", "communiquer avec les parents"],
+    answer: 1
+  },
+  {
+    id: 24,
+    part: "Partie 1",
+    question: "Quelle dimension la pédagogie examine-t-elle selon le document ?",
+    options: ["Uniquement l'utilisation des technologies", "L'organisation des savoirs savants", "Les stratégies, les méthodes et techniques associées à l'enseignement", "L'épistémologie d'une science exacte"],
+    answer: 2
+  },
+  {
+    id: 25,
+    part: "Partie 1",
+    question: "Pour améliorer la qualité de l'enseignement, la pédagogie s'appuie sur :",
+    options: ["Uniquement l'intuition de l'enseignant", "Les acquis des étudiants et le développement de leurs compétences", "La suppression totale des cours magistraux", "L'isolement des étudiants en difficulté"],
+    answer: 1
+  },
+  {
+    id: 26,
+    part: "Partie 1",
+    question: "L'élimination de l'apprentissage monotone permet aux élèves de :",
+    options: ["Dépasser les méthodes traditionnelles de mémorisation", "Ignorer le programme scolaire", "Se substituer au rôle de l'enseignant", "Supprimer l'évaluation"],
+    answer: 0
+  },
+  {
+    id: 27,
+    part: "Partie 1",
+    question: "La pédagogie encourage les élèves ayant des besoins spécifiques à :",
+    options: ["Suivre des cours exclusivement à domicile", "Faire partie de la communauté d'apprentissage ordinaire", "Être dispensés d'apprentissage", "Utiliser uniquement la méthode expositive"],
+    answer: 1
+  },
+  {
+    id: 28,
+    part: "Partie 1",
+    question: "Améliorer la communication enseignant-élève permet à l'enseignant de :",
+    options: ["Mieux se concentrer sur les points faibles de l'élève pour le guider", "Devenir ami avec l'élève sur les réseaux sociaux", "Diminuer son temps de préparation", "Transférer la responsabilité de l'apprentissage aux parents"],
+    answer: 0
+  },
+  {
+    id: 29,
+    part: "Partie 1",
+    question: "En pédagogie, l'enseignant a à gérer le curriculum d'une part, et d'autre part :",
+    options: ["L'administration", "Le groupe-classe", "Le savoir savant", "L'inspection"],
+    answer: 1
+  },
+  {
+    id: 30,
+    part: "Partie 1",
+    question: "Selon l'étymologie présentée, \"didactique\" et \"pédagogie\" devraient être :",
+    options: ["Opposées", "Identiques", "Complémentaires et solidaires", "Indépendantes l'une de l'autre"],
+    answer: 2
+  },
+  
+  // Partie 2
+  {
+    id: 31,
+    part: "Partie 2 : Le Triangle Didactique",
+    question: "Le triangle didactique est également appelé :",
+    options: ["Triangle cognitif", "Triangle pédagogique", "Triangle d'apprentissage", "Triangle épistémologique"],
+    answer: 1
+  },
+  {
+    id: 32,
+    part: "Partie 2",
+    question: "Quels sont les trois pôles essentiels du triangle didactique ?",
+    options: ["École, Famille, Société", "Enseignant, Élève, Savoir", "Programme, Méthode, Évaluation", "Didactique, Pédagogie, Psychologie"],
+    answer: 1
+  },
+  {
+    id: 33,
+    part: "Partie 2",
+    question: "Comment nomme-t-on la relation entre l'Enseignant et le Savoir ?",
+    options: ["La relation d'apprentissage", "La relation didactique", "La relation pédagogique", "Le conflit sociocognitif"],
+    answer: 1
+  },
+  {
+    id: 34,
+    part: "Partie 2",
+    question: "Comment nomme-t-on le processus reliant l'Élève au Savoir ?",
+    options: ["Transposition didactique", "Processus \"apprendre\" (Relation d'apprentissage)", "Processus d'enseignement", "Contrat didactique"],
+    answer: 1
+  },
+  {
+    id: 35,
+    part: "Partie 2",
+    question: "Que représente la relation Enseignant-Élève dans le triangle ?",
+    options: ["L'espace didactique", "L'espace d'évaluation", "L'espace pédagogique (Médiation)", "L'espace savant"],
+    answer: 2
+  },
+  {
+    id: 36,
+    part: "Partie 2",
+    question: "Dans le triangle pédagogique, quel est le rôle principal de l'enseignant vis-à-vis de l'apprenant et du savoir ?",
+    options: ["Un dictateur de savoir", "Un spectateur passif", "Un médiateur qui facilite l'accès au savoir", "Un chercheur académique"],
+    answer: 2
+  },
+  {
+    id: 37,
+    part: "Partie 2",
+    question: "Vis-à-vis du savoir, que doit entretenir l'enseignant selon le modèle du triangle ?",
+    options: ["Une distance critique absolue", "Une maîtrise suffisante (didactique)", "Une remise en question permanente", "Une ignorance feinte"],
+    answer: 1
+  },
+  {
+    id: 38,
+    part: "Partie 2",
+    question: "La relation humaine particulière fondée entre l'enseignant et l'apprenant repose sur :",
+    options: ["L'affectivité pure", "La structuration des contenus et la création d'un environnement propice", "La peur de l'évaluation", "L'absence totale de contraintes"],
+    answer: 1
+  },
+  {
+    id: 39,
+    part: "Partie 2",
+    question: "L'apprenant s'implique activement dans le triangle en :",
+    options: ["Restant silencieux tout au long du cours", "Mémorisant sans comprendre", "Posant des questions et en échangeant avec l'enseignant", "Rédigeant le contrat didactique"],
+    answer: 2
+  },
+  {
+    id: 40,
+    part: "Partie 2",
+    question: "Selon le cours, le formateur (enseignant) est considéré comme :",
+    options: ["Un puit de science intarissable", "Une passerelle posée entre l'apprenant et le savoir", "Un juge de l'apprentissage", "Le créateur du savoir savant"],
+    answer: 1
+  },
+
+  // Partie 3
+  {
+    id: 41,
+    part: "Partie 3 : Concepts Fondamentaux de la Didactique",
+    question: "Quel chercheur a théorisé le concept de \"Contrat didactique\" ?",
+    options: ["Jean-Louis Martinand", "Yves Chevallard", "Guy Brousseau", "Jean Piaget"],
+    answer: 2
+  },
+  {
+    id: 42,
+    part: "Partie 3",
+    question: "Comment Brousseau définit-il le contrat didactique ?",
+    options: ["Un document écrit signé par les parents à la rentrée", "L'ensemble des comportements attendus mutuellement entre l'enseignant et l'élève", "Le programme officiel du ministère", "La méthode d'évaluation de fin d'année"],
+    answer: 1
+  },
+  {
+    id: 43,
+    part: "Partie 3",
+    question: "L'un des problèmes majeurs du contrat didactique est son caractère :",
+    options: ["Trop explicite", "Implicite", "Éphémère", "Juridique"],
+    answer: 1
+  },
+  {
+    id: 44,
+    part: "Partie 3",
+    question: "Le contrat didactique s'explicite le plus souvent à l'occasion :",
+    options: ["De la rentrée scolaire", "De ses ruptures (transgressions)", "De la remise des bulletins", "D'une inspection"],
+    answer: 1
+  },
+  {
+    id: 45,
+    part: "Partie 3",
+    question: "Dans la célèbre expérience de Stella Baruk (Âge du capitaine), combien d'élèves sur 97 ont donné une réponse absurde ?",
+    options: ["26", "50", "76", "97"],
+    answer: 2
+  },
+  {
+    id: 46,
+    part: "Partie 3",
+    question: "Quel âge avait le capitaine dans l'énoncé de Stella Baruk ?",
+    options: ["26 ans", "140 ans", "166 ans", "Il était impossible de le déterminer avec les données fournies"],
+    answer: 3
+  },
+  {
+    id: 47,
+    part: "Partie 3",
+    question: "Comment Stella Baruk qualifie-t-elle les élèves qui utilisent aveuglément les nombres d'un énoncé absurde ?",
+    options: ["Des génies", "Des automaths", "Des mathé-magiciens", "Des cancres"],
+    answer: 1
+  },
+  {
+    id: 48,
+    part: "Partie 3",
+    question: "Du point de vue de l'élève (dans un contrat didactique mathématique classique), si l'enseignant donne des nombres dans un énoncé, il faut :",
+    options: ["En ignorer la moitié", "Les utiliser tous pour répondre à la question", "Demander à l'enseignant lesquels utiliser", "Les remplacer par des lettres"],
+    answer: 1
+  },
+  {
+    id: 49,
+    part: "Partie 3",
+    question: "Du point de vue de l'enseignant, face à des données dans un énoncé :",
+    options: ["Toutes les données doivent être utilisées", "L'élève doit trier ce qui est bon pour la résolution", "L'élève doit deviner la réponse sans calculer", "Le problème ne doit pas avoir de solution"],
+    answer: 1
+  },
+  {
+    id: 50,
+    part: "Partie 3",
+    question: "Le contrat didactique détermine le métier de l'élève et :",
+    options: ["Le métier des parents", "Le salaire de l'enseignant", "Le métier du maître", "Le programme scolaire"],
+    answer: 2
+  },
+  {
+    id: 51,
+    part: "Partie 3",
+    question: "Si le maître ou l'élève se substitue l'un à l'autre dans le contrat didactique, que se passe-t-il ?",
+    options: ["L'apprentissage s'accélère", "La tâche d'apprentissage s'effondre", "Le savoir devient savant", "Un conflit sociocognitif positif naît"],
+    answer: 1
+  },
+  {
+    id: 52,
+    part: "Partie 3",
+    question: "De quoi dépend en premier lieu le contrat didactique ?",
+    options: ["De l'humeur de la classe", "Du manuel scolaire choisi", "De la stratégie d'enseignement adoptée", "Des résultats scolaires précédents"],
+    answer: 2
+  },
+  {
+    id: 53,
+    part: "Partie 3",
+    question: "Quel est l'enjeu fondamental du contrat didactique ?",
+    options: ["Le maintien de la discipline", "L'acquisition du savoir par les élèves", "La préparation aux examens standardisés", "La paix sociale en classe"],
+    answer: 1
+  },
+  {
+    id: 54,
+    part: "Partie 3",
+    question: "Une grande partie des difficultés des élèves (malentendus, refus scolaire) est explicable par :",
+    options: ["Un manque d'intelligence", "Des effets de contrat mal posé ou incompris", "Une mauvaise alimentation", "Un savoir savant trop complexe"],
+    answer: 1
+  },
+  {
+    id: 55,
+    part: "Partie 3",
+    question: "Pour éviter les dérives du contrat, l'enseignant doit, lors d'une recherche d'information :",
+    options: ["Donner immédiatement la bonne réponse", "Répondre à une question par une question pour mobiliser les idées", "Sanctionner les mauvaises questions", "Faire le travail à la place de l'élève"],
+    answer: 1
+  },
+  {
+    id: 56,
+    part: "Partie 3",
+    question: "Qui définit la \"Représentation\" comme \"le produit et le processus d'une activité mentale par laquelle un individu reconstitue le réel\" (1987) ?",
+    options: ["Brousseau", "Abric", "Martinand", "Kolb"],
+    answer: 1
+  },
+  {
+    id: 57,
+    part: "Partie 3",
+    question: "En didactique, à qui attribue-t-on généralement une \"conception\" ?",
+    options: ["Au programme officiel", "Au chercheur", "À l'élève (pour rendre compte de ses conduites)", "À la société"],
+    answer: 2
+  },
+  {
+    id: 58,
+    part: "Partie 3",
+    question: "Les représentations/conceptions englobent :",
+    options: ["Uniquement les connaissances scientifiques exactes", "Les connaissances explicites et les intuitions, parfois erronées, avant, pendant ou après l'enseignement", "Uniquement ce que l'élève a oublié", "Les directives ministérielles"],
+    answer: 1
+  },
+  {
+    id: 59,
+    part: "Partie 3",
+    question: "Dans l'exemple de mathématiques du cours, quelle est la conception erronée fréquente sur la soustraction ?",
+    options: ["Soustraire, c'est toujours ajouter", "Soustraire, c'est toujours multiplier", "Soustraire, c'est toujours enlever", "Soustraire est impossible avec des nombres entiers"],
+    answer: 2
+  },
+  {
+    id: 60,
+    part: "Partie 3",
+    question: "Dans l'exemple de grammaire du cours, quelle conception limitée les élèves ont-ils souvent du \"sujet\" d'une phrase ?",
+    options: ["Le sujet est toujours un pronom", "Le sujet est toujours à la fin de la phrase", "Le sujet est uniquement \"celui qui fait l'action\" (posant problème à la voix passive)", "Le sujet est toujours au pluriel"],
+    answer: 2
+  },
+  {
+    id: 61,
+    part: "Partie 3",
+    question: "Dans l'exemple de biologie, quelle est la confusion fréquente concernant la respiration ?",
+    options: ["Confondre respiration et digestion", "Confondre respiration et production d'énergie (penser que l'oxygène devient énergie)", "Penser que les plantes ne respirent pas", "Croire que la respiration s'arrête pendant le sommeil"],
+    answer: 1
+  },
+  {
+    id: 62,
+    part: "Partie 3",
+    question: "Pourquoi est-il important d'identifier les représentations en didactique ?",
+    options: ["Pour se moquer des erreurs des élèves", "Pour repérer les obstacles et éviter les apprentissages superficiels", "Pour noter les élèves plus sévèrement", "Pour raccourcir le temps de cours"],
+    answer: 1
+  },
+  {
+    id: 63,
+    part: "Partie 3",
+    question: "Le concept d'\"Objectif-obstacle\" a été inspiré par les travaux de :",
+    options: ["Guy Brousseau", "Jean-Louis Martinand", "Maria Montessori", "David Kolb"],
+    answer: 1
+  },
+  {
+    id: 64,
+    part: "Partie 3",
+    question: "Qu'est-ce qu'un objectif-obstacle ?",
+    options: ["Une sanction donnée en cas de mauvais comportement", "Une compétence dont l'acquisition nécessite de surmonter un obstacle lié aux représentations de l'apprenant", "Un objectif impossible à atteindre", "Un problème matériel dans la classe (ex: panne de projecteur)"],
+    answer: 1
+  },
+  {
+    id: 65,
+    part: "Partie 3",
+    question: "Dans l'exemple de l'objectif-obstacle sur les fractions, quelle est la représentation faisant obstacle ?",
+    options: ["Penser que les fractions n'existent pas", "Voir la fraction comme \"deux entiers séparés par une barre\" sans lien avec une quantité unique", "Penser qu'une fraction est toujours supérieure à 1", "Confondre fraction et géométrie"],
+    answer: 1
+  },
+  {
+    id: 66,
+    part: "Partie 3",
+    question: "Comment définit-on un conflit cognitif ?",
+    options: ["Une dispute entre deux élèves", "Une opposition entre les parents et l'école", "La proposition d'une situation qui contredit la conception initiale de l'élève", "Un désaccord sur la note attribuée"],
+    answer: 2
+  },
+  {
+    id: 67,
+    part: "Partie 3",
+    question: "Le conflit SOCIOCognitif suppose :",
+    options: ["Une tension interne chez un seul individu", "La confrontation des représentations/points de vue d'au moins deux individus en interaction", "Un conflit politique dans l'établissement", "Une lutte des classes au sein de l'école"],
+    answer: 1
+  },
+  {
+    id: 68,
+    part: "Partie 3",
+    question: "Quel est le but du conflit sociocognitif pour l'apprenant ?",
+    options: ["Imposer son point de vue aux autres", "Prendre conscience du point de vue d'autrui, reformuler le sien et construire son esprit", "Éliminer les élèves les plus faibles", "Créer une compétition néfaste"],
+    answer: 1
+  },
+  {
+    id: 69,
+    part: "Partie 3",
+    question: "Qu'est-ce qu'une \"Situation-problème\" ?",
+    options: ["Un moment où l'enseignant perd le contrôle de la classe", "Une activité pédagogique permettant de construire des connaissances en résolvant un problème", "Une équation mathématique sans solution", "Un problème personnel de l'élève ramené en classe"],
+    answer: 1
+  },
+  {
+    id: 70,
+    part: "Partie 3",
+    question: "\"L'ensemble organisé des concepts enseignés\" correspond à la définition de :",
+    options: ["La trame conceptuelle", "La transposition externe", "Le modèle didactique", "Le contrat didactique"],
+    answer: 0
+  },
+  {
+    id: 71,
+    part: "Partie 3",
+    question: "Qu'est-ce que la transposition didactique ?",
+    options: ["Le passage d'une classe à l'autre", "La traduction d'un manuel en langue étrangère", "La transformation des savoirs savants en savoirs à enseigner puis enseignés", "Le transfert d'un enseignant dans une autre école"],
+    answer: 2
+  },
+  {
+    id: 72,
+    part: "Partie 3",
+    question: "La transposition didactique EXTERNE est l'étape où :",
+    options: ["L'enseignant prépare sa leçon chez lui", "Les savoirs savants sont transformés en connaissances à enseigner (programmes/manuels)", "L'élève révise pour son examen", "Le chercheur publie une découverte"],
+    answer: 1
+  },
+  {
+    id: 73,
+    part: "Partie 3",
+    question: "Qui réalise généralement la transposition didactique EXTERNE ?",
+    options: ["Les élèves", "Les parents d'élèves", "Les responsables des programmes scolaires (Ministères)", "Les enseignants dans leur classe"],
+    answer: 2
+  },
+  {
+    id: 74,
+    part: "Partie 3",
+    question: "Qu'est-ce que la transposition didactique INTERNE ?",
+    options: ["La transformation des connaissances à enseigner en connaissances enseignées dans la classe", "L'élaboration des manuels scolaires par les éditeurs", "L'assimilation du savoir par l'élève dans son cerveau", "L'évaluation finale du trimestre"],
+    answer: 0
+  },
+  {
+    id: 75,
+    part: "Partie 3",
+    question: "Qui réalise la transposition didactique INTERNE ?",
+    options: ["Le ministère", "L'enseignant (chargé de cours)", "L'inspecteur d'académie", "Le savant/chercheur d'origine"],
+    answer: 1
+  },
+  {
+    id: 76,
+    part: "Partie 3",
+    question: "Dans l'exemple du Théorème de Pythagore, quelle est la formulation du \"Savoir savant\" ?",
+    options: ["a² + b² = c²", "Dans un triangle rectangle, le carré de l'hypoténuse est égal à la somme des carrés des deux autres côtés.", "Pour trouver l'échelle, on additionne le mur et le sol.", "L'hypoténuse est le côté le plus long."],
+    answer: 1
+  },
+  {
+    id: 77,
+    part: "Partie 3",
+    question: "Dans l'exemple du Théorème de Pythagore (transposition), l'enseignant utilise une situation problème concrète. Laquelle est citée dans le cours ?",
+    options: ["Calculer la hauteur d'une pyramide", "Trouver la distance entre deux navires", "Calculer la longueur d'une échelle posée contre un mur", "Mesurer la diagonale d'un terrain de football"],
+    answer: 2
+  },
+  {
+    id: 78,
+    part: "Partie 3",
+    question: "Dans cette situation problème de l'échelle, quelles sont les mesures données dans le cours pour le mur et la distance au sol ?",
+    options: ["Mur : 3m, Distance : 4m", "Mur : 4m, Distance : 1,5m", "Mur : 10m, Distance : 2m", "Mur : 5m, Distance : 5m"],
+    answer: 1
+  },
+  {
+    id: 79,
+    part: "Partie 3",
+    question: "Dans la démarche en classe (savoir enseigné), par quoi l'enseignant commence-t-il la séquence sur Pythagore ?",
+    options: ["Une leçon formalisée et théorique", "L'apprentissage par cœur de la formule", "Une phase de questionnement via une situation problème", "Un contrôle surprise"],
+    answer: 2
+  },
+  {
+    id: 80,
+    part: "Partie 3",
+    question: "À quel moment de la démarche l'enseignant énonce-t-il clairement le théorème (formalisation) ?",
+    options: ["Avant même de dessiner la figure", "Après la phase de recherche et la découverte du besoin de calculer un côté inconnu", "Uniquement si les élèves échouent à l'examen", "Il ne l'énonce jamais, c'est une méthode de \"découverte totale\""],
+    answer: 1
+  },
+
+  // Partie 4
+  {
+    id: 81,
+    part: "Partie 4 : Les TICE et l'Enseignement/Apprentissage",
+    question: "Que signifie l'acronyme TICE ?",
+    options: ["Techniques de l'Information pour la Classe et l'École", "Technologies de l'Information et de la Communication pour l'Éducation", "Traitement Informatique des Connaissances Éducatives", "Théories Interprétatives de la Communication Enseignante"],
+    answer: 1
+  },
+  {
+    id: 82,
+    part: "Partie 4",
+    question: "Les plateformes LMS sont des outils TICE. Que cite le cours comme exemples de LMS ?",
+    options: ["Facebook et Twitter", "Word et Excel", "Moodle et Google Classroom", "Kahoot et GeoGebra"],
+    answer: 2
+  },
+  {
+    id: 83,
+    part: "Partie 4",
+    question: "Quel est l'un des objectifs généraux des TICE cités dans le cours ?",
+    options: ["Remplacer totalement les enseignants par des IA", "Réduire la fracture numérique", "Augmenter le coût de l'éducation", "Standardiser les élèves"],
+    answer: 1
+  },
+  {
+    id: 84,
+    part: "Partie 4",
+    question: "Quel changement les TICE apportent-elles au rôle traditionnel de l'enseignant ?",
+    options: ["Il devient un simple surveillant", "Il devient le seul détenteur du savoir", "Il devient un guide, un facilitateur", "Son rôle disparaît complètement"],
+    answer: 2
+  },
+  {
+    id: 85,
+    part: "Partie 4",
+    question: "Parmi les rôles pédagogiques des TICE dans l'enseignement, on trouve :",
+    options: ["L'augmentation de la monotonie", "Les outils de différenciation pédagogique", "L'interdiction des auto-évaluations", "Le ralentissement des corrections"],
+    answer: 1
+  },
+  {
+    id: 86,
+    part: "Partie 4",
+    question: "Quel est un apport des TICE spécifiquement pour l'enseignant ?",
+    options: ["Gain de temps dans la préparation et la correction", "Perte de temps due aux problèmes techniques", "Baisse de l'interaction avec les élèves", "Obligation de créer son propre matériel informatique"],
+    answer: 0
+  },
+  {
+    id: 87,
+    part: "Partie 4",
+    question: "Pour l'élève (apprentissage), quel est un atout majeur des TICE ?",
+    options: ["L'apprentissage passif et individuel", "La démotivation face à la complexité", "L'accès permanent à des ressources variées", "La limitation des compétences transversales"],
+    answer: 2
+  },
+  {
+    id: 88,
+    part: "Partie 4",
+    question: "Quel risque est directement associé à l'utilisation des TICE par les élèves ?",
+    options: ["L'hyper-concentration", "La surcharge cognitive et la distraction", "La diminution de la myopie", "L'excès de conflit sociocognitif"],
+    answer: 1
+  },
+  {
+    id: 89,
+    part: "Partie 4",
+    question: "Comment s'appelle l'utilisation didactique où les élèves consultent les contenus à la maison et où la classe est dédiée à la mise en pratique ?",
+    options: ["L'enseignement magistral", "Le Lapbooking", "La classe inversée", "L'apprentissage adaptatif"],
+    answer: 2
+  },
+  {
+    id: 90,
+    part: "Partie 4",
+    question: "GeoGebra et PhET sont des exemples d'outils utilisés pour :",
+    options: ["La gestion administrative de l'école", "La simulation et la modélisation", "La communication avec les parents", "La sécurité des réseaux"],
+    answer: 1
+  },
+  {
+    id: 91,
+    part: "Partie 4",
+    question: "Qu'est-ce que l'apprentissage \"adaptatif\" rendu possible par les TICE ?",
+    options: ["Des plateformes qui s'adaptent à la luminosité de la pièce", "Des plateformes qui ajustent les exercices selon le niveau de l'élève", "Des élèves qui s'adaptent au manque de matériel", "Des enseignants qui adaptent leur emploi du temps"],
+    answer: 1
+  },
+  {
+    id: 92,
+    part: "Partie 4",
+    question: "Pour réussir l'intégration des TICE, une condition indispensable est :",
+    options: ["La suppression des manuels papier", "La formation continue des enseignants", "L'achat du matériel le plus cher", "L'interdiction d'internet à la maison"],
+    answer: 1
+  },
+  {
+    id: 93,
+    part: "Partie 4",
+    question: "Que signifie le sigle CRCN ?",
+    options: ["Cadre de Référence des Compétences Numériques", "Centre de Recherche pour la Communication Nouvelle", "Certificat de Réussite de la Classe Numérique", "Code de Régulation des Contenus Numériques"],
+    answer: 0
+  },
+  {
+    id: 94,
+    part: "Partie 4",
+    question: "À qui s'adresse principalement le référentiel CRCN standard ?",
+    options: ["Aux enseignants", "Aux directeurs d'établissement", "Aux élèves et aux citoyens", "Aux inspecteurs"],
+    answer: 2
+  },
+  {
+    id: 95,
+    part: "Partie 4",
+    question: "Combien de grands domaines structurent le CRCN (et le CRCN-EDU) ?",
+    options: ["3", "4", "5", "7"],
+    answer: 2
+  },
+  {
+    id: 96,
+    part: "Partie 4",
+    question: "Dans le CRCN, à quel domaine correspond la compétence \"Programmer\" (3.4) ?",
+    options: ["Information et données", "Communication et collaboration", "Création de contenus", "Protection et sécurité"],
+    answer: 2
+  },
+  {
+    id: 97,
+    part: "Partie 4",
+    question: "Dans le CRCN, \"Protéger la santé, le bien-être et l'environnement\" (4.3) fait partie du domaine :",
+    options: ["Engagement professionnel", "Protection et sécurité", "Environnement numérique", "Communication et collaboration"],
+    answer: 1
+  },
+  {
+    id: 98,
+    part: "Partie 4",
+    question: "Le CRCN-EDU est un référentiel destiné spécifiquement :",
+    options: ["Aux parents d'élèves", "Aux élèves de primaire", "Aux enseignants et professionnels de l'éducation", "Aux informaticiens des rectorats"],
+    answer: 2
+  },
+  {
+    id: 99,
+    part: "Partie 4",
+    question: "Dans le CRCN-EDU, le domaine 2 concerne :",
+    options: ["L'engagement professionnel", "La gestion des ressources numériques", "La protection des données", "L'évaluation au travers du numérique"],
+    answer: 1
+  },
+  {
+    id: 100,
+    part: "Partie 4",
+    question: "Dans le CRCN-EDU, la compétence \"Différencier\" (4.2) se trouve dans quel domaine ?",
+    options: ["Engagement professionnel", "Prendre en compte la diversité des apprenants et les rendre autonomes", "Enseignement - Apprentissage avec et par le numérique", "Développement des compétences numériques des apprenants"],
+    answer: 1
+  }
+];
+
+        const letters = ['A', 'B', 'C', 'D'];
+        let answers = {};
+        let submitted = false;
+
+        // Initialization
+        document.addEventListener('DOMContentLoaded', () => {
+            renderQuestions();
+            lucide.createIcons();
+        });
+
+        function renderQuestions() {
+            const container = document.getElementById('questions-container');
+            let html = '';
+            
+            questionsData.forEach((q, index) => {
+                const isNewPart = index === 0 || questionsData[index - 1].part !== q.part;
+                
+                if (isNewPart) {
+                    html += `<h3 class="text-xl font-bold text-slate-800 mt-12 mb-4 pb-2 border-b-2 border-slate-200">${q.part}</h3>`;
+                }
+                
+                html += `
+                <div id="q-container-${q.id}" class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 transition-all duration-300 hover:border-blue-200">
+                    <div class="flex gap-4 mb-4">
+                        <span class="flex-shrink-0 flex items-center justify-center w-8 h-8 rounded-full bg-blue-100 text-blue-700 font-bold text-sm">
+                            ${q.id}
+                        </span>
+                        <h4 class="text-lg font-medium text-slate-800 mt-1 leading-snug">
+                            ${q.question}
+                        </h4>
+                    </div>
+
+                    <div class="space-y-3 pl-12">
+                        ${q.options.map((opt, optIdx) => `
+                            <div id="opt-${q.id}-${optIdx}" onclick="handleSelect(${q.id}, ${optIdx})" class="relative flex items-start gap-3 p-4 rounded-lg border-2 border-slate-100 bg-slate-50 cursor-pointer transition-all duration-200 ease-in-out group hover:border-blue-200 hover:bg-slate-100/50">
+                                <div id="letter-${q.id}-${optIdx}" class="flex-shrink-0 flex items-center justify-center w-6 h-6 rounded border border-slate-300 font-semibold text-xs mt-0.5 text-slate-500 group-hover:border-blue-400">
+                                    ${letters[optIdx]}
+                                </div>
+                                <span class="leading-relaxed text-slate-700">${opt}</span>
+                                
+                                <!-- Icons for submitted state -->
+                                <i data-lucide="check-circle-2" id="icon-check-${q.id}-${optIdx}" class="hidden absolute right-4 top-4 text-green-500 w-5 h-5"></i>
+                                <i data-lucide="x-circle" id="icon-x-${q.id}-${optIdx}" class="hidden absolute right-4 top-4 text-red-500 w-5 h-5"></i>
+                            </div>
+                        `).join('')}
+                    </div>
+                    
+                    <!-- Missing answer warning -->
+                    <div id="warning-${q.id}" class="hidden mt-4 pl-12 flex items-center gap-2 text-amber-600 text-sm font-medium">
+                        <i data-lucide="alert-circle" class="w-4 h-4"></i> Vous n'avez pas répondu à cette question.
+                    </div>
+                </div>
+                `;
+            });
+            container.innerHTML = html;
+        }
+
+        function handleSelect(questionId, optionIndex) {
+            if (submitted) return;
+            answers[questionId] = optionIndex;
+            updateQuestionUI(questionId);
+            updateProgress();
+            
+            document.getElementById('btn-submit').disabled = false;
+        }
+
+        function updateQuestionUI(qId) {
+            const q = questionsData.find(x => x.id === qId);
+            const selectedIdx = answers[qId];
+
+            for (let i = 0; i < q.options.length; i++) {
+                const optDiv = document.getElementById(`opt-${qId}-${i}`);
+                const letterDiv = document.getElementById(`letter-${qId}-${i}`);
+                const isSelected = selectedIdx === i;
+
+                if (!submitted) {
+                    optDiv.className = `relative flex items-start gap-3 p-4 rounded-lg border-2 cursor-pointer transition-all duration-200 ease-in-out group ${isSelected ? "border-blue-500 bg-blue-50/50" : "border-slate-100 hover:border-blue-200 bg-slate-50 hover:bg-slate-100/50"}`;
+                    letterDiv.className = `flex-shrink-0 flex items-center justify-center w-6 h-6 rounded border font-semibold text-xs mt-0.5 ${isSelected ? "bg-blue-500 border-blue-500 text-white" : "border-slate-300 text-slate-500 group-hover:border-blue-400"}`;
+                } else {
+                    const isCorrectAnswer = q.answer === i;
+                    let optClasses = "relative flex items-start gap-3 p-4 rounded-lg border-2 cursor-default transition-all duration-200 ease-in-out group ";
+                    let letterClasses = "flex-shrink-0 flex items-center justify-center w-6 h-6 rounded border font-semibold text-xs mt-0.5 ";
+
+                    if (isCorrectAnswer) {
+                        optClasses += "border-green-500 bg-green-50 text-green-900 font-medium ";
+                        letterClasses += "bg-green-500 border-green-500 text-white";
+                        document.getElementById(`icon-check-${qId}-${i}`).classList.remove('hidden');
+                    } else if (isSelected && !isCorrectAnswer) {
+                        optClasses += "border-red-400 bg-red-50 text-red-900 ";
+                        letterClasses += "bg-red-500 border-red-500 text-white";
+                        document.getElementById(`icon-x-${qId}-${i}`).classList.remove('hidden');
+                    } else {
+                        optClasses += "border-slate-100 bg-white opacity-50 ";
+                        letterClasses += "border-slate-200 text-slate-400";
+                    }
+                    optDiv.className = optClasses;
+                    letterDiv.className = letterClasses;
+                }
+            }
+        }
+
+        function updateProgress() {
+            const answeredCount = Object.keys(answers).length;
+            const progress = Math.round((answeredCount / questionsData.length) * 100);
+            document.getElementById('progress-text').innerText = `${progress}%`;
+            document.getElementById('progress-bar').style.width = `${progress}%`;
+        }
+
+        function handleSubmit() {
+            if (Object.keys(answers).length === 0) return;
+            
+            let currentScore = 0;
+            submitted = true;
+
+            // Calculate score and update UI for all questions
+            questionsData.forEach(q => {
+                const selectedIdx = answers[q.id];
+                if (selectedIdx === q.answer) {
+                    currentScore++;
+                }
+                
+                // Trigger UI update to display correct/incorrect classes
+                updateQuestionUI(q.id);
+
+                // Show warnings for unanswered questions
+                const qContainer = document.getElementById(`q-container-${q.id}`);
+                const warningDiv = document.getElementById(`warning-${q.id}`);
+                
+                qContainer.classList.remove('hover:border-blue-200');
+                if (selectedIdx === undefined) {
+                    warningDiv.classList.remove('hidden');
+                    qContainer.classList.replace('border-slate-200', 'border-red-200');
+                } else {
+                    const isCorrect = selectedIdx === q.answer;
+                    qContainer.classList.replace('border-slate-200', isCorrect ? 'border-green-200' : 'border-red-200');
+                    if (qContainer.classList.contains('border-blue-500')) {
+                       qContainer.classList.remove('border-blue-500');
+                       qContainer.classList.add(isCorrect ? 'border-green-200' : 'border-red-200');
+                    }
+                }
+            });
+
+            // Update Results Banner
+            document.getElementById('score-text').innerText = currentScore;
+            
+            let message = '';
+            if (currentScore >= 80) message = 'Excellent travail ! Vous maîtrisez les concepts didactiques.';
+            else if (currentScore >= 50) message = 'Bon travail, mais quelques révisions sont encore nécessaires.';
+            else message = 'Il faut revoir vos cours de didactique, ne vous découragez pas !';
+            
+            document.getElementById('score-message').innerText = message;
+            document.getElementById('results-banner').classList.remove('hidden');
+
+            // Swap header actions
+            document.getElementById('action-valider').classList.add('hidden');
+            document.getElementById('action-recommencer').classList.remove('hidden');
+            
+            // Swap bottom actions
+            document.getElementById('btn-submit-bottom').classList.add('hidden');
+            document.getElementById('btn-top-bottom').classList.remove('hidden');
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function handleReset() {
+            if (confirm('Voulez-vous vraiment recommencer ? Toutes vos réponses seront perdues.')) {
+                answers = {};
+                submitted = false;
+                
+                // Reset UI
+                renderQuestions();
+                lucide.createIcons();
+                updateProgress();
+                document.getElementById('btn-submit').disabled = true;
+                
+                // Hide Banner
+                document.getElementById('results-banner').classList.add('hidden');
+                
+                // Swap Header Actions
+                document.getElementById('action-valider').classList.remove('hidden');
+                document.getElementById('action-recommencer').classList.add('hidden');
+                
+                // Swap Bottom Actions
+                document.getElementById('btn-submit-bottom').classList.remove('hidden');
+                document.getElementById('btn-top-bottom').classList.add('hidden');
+
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        }
+    </script>
+</body>
+</html>
